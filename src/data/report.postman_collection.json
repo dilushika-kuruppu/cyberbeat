@@ -1,0 +1,131 @@
+{
+	"info": {
+		"_postman_id": "d83c7006-784e-4936-aedd-6bb8046733e8",
+		"name": "report",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19415792"
+	},
+	"item": [
+		{
+			"name": "issuer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://vkenpayreport.us-east-2.elasticbeanstalk.com/v1/report/issuer/43",
+					"protocol": "http",
+					"host": [
+						"vkenpayreport",
+						"us-east-2",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"v1",
+						"report",
+						"issuer",
+						"43"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verify",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"email\":\"prasanna@cyberbeat.com.sg\",\r\n    \"verifyCode\":\"1200004986510276\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://vkenpayreport.us-east-2.elasticbeanstalk.com/v1/report/verify",
+					"protocol": "http",
+					"host": [
+						"vkenpayreport",
+						"us-east-2",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"v1",
+						"report",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verifi_success",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"email\":\"prasanna@cyberbeat.com.sg\",\r\n    \"verifyCode\":\"1200004986510276\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://vkenpayreport.us-east-2.elasticbeanstalk.com/v1/report/verify",
+					"protocol": "http",
+					"host": [
+						"vkenpayreport",
+						"us-east-2",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"v1",
+						"report",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "timestamp",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://vkenpayreport.us-east-2.elasticbeanstalk.com/v1/report/timestamp?startTime=Tue Oct 08 13:23:30 IST 2024&endTime=Tue Oct 08 13:23:30 IST 2024",
+					"protocol": "http",
+					"host": [
+						"vkenpayreport",
+						"us-east-2",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"v1",
+						"report",
+						"timestamp"
+					],
+					"query": [
+						{
+							"key": "startTime",
+							"value": "Tue Oct 08 13:23:30 IST 2024"
+						},
+						{
+							"key": "endTime",
+							"value": "Tue Oct 08 13:23:30 IST 2024"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
