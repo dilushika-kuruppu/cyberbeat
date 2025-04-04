@@ -18,6 +18,7 @@
   "proxy": "http://vkenpayreport.us-east-2.elasticbeanstalk.com",
   "scripts": {
     "start": "react-scripts start",
+    "start:local": "set HTTPS=true && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
