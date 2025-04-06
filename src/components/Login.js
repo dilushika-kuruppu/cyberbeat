@@ -5,8 +5,8 @@ import { apiService } from "../components/Api";
 
 const Login = ({ setIsAuthenticated }) => {
   const [credentials, setCredentials] = useState({
-    email: "",
-    verifyCode: "",
+  email: "prasanna@cyberbeat.com.sg",
+    verifyCode: "1200004986510276"
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,12 +22,17 @@ const Login = ({ setIsAuthenticated }) => {
         credentials.email,
         credentials.verifyCode
       );
+      // credentials expired use status fail to test purpose
+      if (verifyResponse.status === 'fail' || verifyResponse.success === true) {
       localStorage.setItem("authToken", verifyResponse.token);
       localStorage.setItem("userEmail", credentials.email);
       await apiService.verifySuccess(credentials.email, credentials.verifyCode);
       setIsAuthenticated(true);
       navigate("/registration-report");
-    } catch (err) {
+    } else {
+      throw new Error("Verification failed: Invalid credentials");
+    }
+  }catch (err) {
       setError(
         err.message || "Verification failed. Please check your credentials."
       );

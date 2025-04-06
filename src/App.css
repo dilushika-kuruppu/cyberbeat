@@ -105,6 +105,17 @@
   background-color: #92278F;
 }
 
+.logout-button {
+  background-color: #f7941d; 
+  color: #121212; 
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
 .dark-theme {
   background-color: #ffffff;
   color: #121212;;
@@ -124,8 +135,13 @@
   border-radius: 8px; 
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); 
   color: #f7941d; 
+  position: relative; 
 }
-
+.header-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
 .loading-dark {
   color: #f7941d;
   text-align: center;

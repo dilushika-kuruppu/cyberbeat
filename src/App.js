@@ -26,12 +26,15 @@ function App() {
         <Route
           path="/registration-report"
           element={
-            isAuthenticated ? <RegistrationReport /> : <Navigate to="/" />
-          }
+            isAuthenticated ? 
+            <RegistrationReport setIsAuthenticated={setIsAuthenticated} /> : 
+            <Navigate to="/" />
+        } 
         />
         <Route
           path="/verification/:requestId"
-          element={isAuthenticated ? <Verification /> : <Navigate to="/" />}
+          element={isAuthenticated ? 
+          <Verification setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />}
         />
       </Routes>
     </Router>

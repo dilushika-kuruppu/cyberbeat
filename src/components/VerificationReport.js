@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../components/Api";
 
-const VerificationView = () => {
+const VerificationView = ({setIsAuthenticated}) => {
   const [verifications, setVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,7 +11,9 @@ const VerificationView = () => {
   const safeJsonParse = (jsonString) => {
     try {
       if (!jsonString || jsonString === "undefined") return null;
+      return JSON.parse(jsonString);
     } catch (e) {
+      console.error("JSON parse error:", e);
       return null;
     }
   };
@@ -123,11 +125,19 @@ const VerificationView = () => {
   if (error) {
     return <div className="error-message">{error}</div>;
   }
-
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
   return (
     <div className="dark-theme">
       <div className="header-dark">
-        <h2>Verification Report</h2>
+        <h2 className="header-title">Verification Report</h2>
+        <button onClick={handleLogout} className="logout-button">
+        Logout
+        </button>
       </div>
       <table>
         <thead>

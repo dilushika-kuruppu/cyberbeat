@@ -13,7 +13,7 @@ const logVerification = (action, status, message, metadata = {}) => {
 };
 
 export const apiService = {
-  verify: async (email, verifyCode, navigate) => {
+  verify: async (email, verifyCode) => {
     try {
       logVerification("verify_attempt", "started", "Verification initiated", {
         email,

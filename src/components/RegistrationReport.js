@@ -2,16 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../components/Api";
 
-const RegistrationReport = () => {
+const RegistrationReport = ({ setIsAuthenticated }) => {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
-
+    const navigate = useNavigate();
   const safeJsonParse = (jsonString) => {
     try {
       if (!jsonString || jsonString === "undefined") return null;
+      return JSON.parse(jsonString);
     } catch (e) {
+      console.error("JSON parse error:", e);
       return null;
     }
   };
@@ -52,7 +53,6 @@ const RegistrationReport = () => {
           throw new Error("No data received from API");
         }
         const registrationList = data.registerResponseDtoList || [];
-
         if (!registrationList.length) {
           throw new Error("No registration data found in response");
         }
@@ -63,7 +63,6 @@ const RegistrationReport = () => {
               reg.finalResponse
             )?.vkenpayRegistration;
             const initialRequest = safeJsonParse(reg.initialRequest);
-
             if (!reg.requestId) {
               return null;
             }
@@ -73,14 +72,14 @@ const RegistrationReport = () => {
               requestId: reg.requestId,
               issuerCode:
                 finalResponse?.instInfo?.issuerCode ||
-                initialRequest?.instInfo?.issuerCode ||
+           initialRequest?.instInfo?.issuerCode ||
                 "Not available",
               issuerName:
                 finalResponse?.instInfo?.issuerName ||
-                initialRequest?.instInfo?.issuerName ||
+                 initialRequest?.instInfo?.issuerName ||
                 "Not available",
               emailId:
-                finalResponse?.activationDetail?.emailId ||
+               finalResponse?.activationDetail?.emailId ||
                 initialRequest?.issuedCardInfo?.emailId ||
                 "Not available",
               statusMessage: finalResponse?.statusMessage || "Not available",
@@ -135,10 +134,20 @@ const RegistrationReport = () => {
     return <div className="error-message">{error}</div>;
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
   return (
     <div className="dark-theme">
       <div className="header-dark">
-        <h2>Registration Report</h2>
+        <h2 className="header-title">Registration Report</h2>
+        <button onClick={handleLogout} className="logout-button">
+          Logout
+        </button>
       </div>
 
       <div className="table-container-dark">
