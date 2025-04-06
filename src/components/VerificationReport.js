@@ -44,18 +44,22 @@ const VerificationView = ({setIsAuthenticated}) => {
       return "Invalid date";
     }
   };
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getIssuerReport(43);
+        const startTime = "Tue Oct 01 00:00:00 IST 2024";
+      const endTime = "Tue Oct 08 23:59:59 IST 2024";
+      
+        const data = await apiService.getTimestampReport(startTime, endTime);
+        console.log(data);
         if (!data) {
           throw new Error("No data received from API");
         }
         const registrationList = data.registerResponseDtoList || [];
-
+console.log(registrationList);
         if (!registrationList.length) {
           throw new Error("No registration data found in response");
         }
@@ -97,6 +101,15 @@ const VerificationView = ({setIsAuthenticated}) => {
                 finalResponse?.activationDetail?.pcode2 || "Not available",
               userProfileID: finalResponse?.userProfileID || "Not available",
               deviceRefID: finalResponse?.deviceRefID || "Not available",
+              issuedCardInfo:initialRequest?.issuedCardInfo || {
+                cardPan: initialRequest?.issuedCardInfo.cardPan || "Not available",
+                cardCvv:initialRequest?.issuedCardInfo.cardCvv || "Not available",
+                expDate: initialRequest?.issuedCardInfo.expDate || "Not available",
+                firstName: initialRequest?.issuedCardInfo.firstName || "Not available",
+                lastName: initialRequest?.issuedCardInfo.lastName ||  "Not available",
+                city: initialRequest?.issuedCardInfo.city || "Not available",
+                phoneNo: initialRequest?.issuedCardInfo.phoneNo || "Not available",
+              },
             };
           })
           .filter((reg) => reg !== null);
@@ -156,7 +169,7 @@ const VerificationView = ({setIsAuthenticated}) => {
               <tr key={item.requestId}>
                 <td>{item.timestamp}</td>
                 <td>{item.requestId}</td>
-                <td>{item.numberToVerify}</td>
+                <td>{item.issuedCardInfo.cardPan}</td>
                 <td>{item.issuerCode}</td>
                 <td>{item.statusMessage}</td>
                 <td>{item.statusCode}</td>
