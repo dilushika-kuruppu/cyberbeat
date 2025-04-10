@@ -28,7 +28,7 @@ const Login = ({ setIsAuthenticated }) => {
       localStorage.setItem("userEmail", credentials.email);
       await apiService.verifySuccess(credentials.email, credentials.verifyCode);
       setIsAuthenticated(true);
-      navigate("/registration-report");
+      navigate("/home");
     } else {
       throw new Error("Verification failed: Invalid credentials");
     }

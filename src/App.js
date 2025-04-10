@@ -8,6 +8,7 @@ import {
 import Login from "./components/Login";
 import RegistrationReport from "./components/RegistrationReport";
 import Verification from "./components/VerificationReport";
+import Home from "./components/Home";
 import "./App.css";
 
 function App() {
@@ -22,6 +23,13 @@ function App() {
         <Route
           path="/"
           element={<Login setIsAuthenticated={setIsAuthenticated} />}
+        />
+             <Route
+          path="/home"
+          element={
+            isAuthenticated ? <Home setIsAuthenticated={setIsAuthenticated} /> :
+          <Navigate to="/" />
+        }
         />
         <Route
           path="/registration-report"

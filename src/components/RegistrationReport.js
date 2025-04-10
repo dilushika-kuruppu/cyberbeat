@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../components/Api";
+import HomeImage from "../assets/Logo.svg";
 
 const RegistrationReport = ({ setIsAuthenticated }) => {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const safeJsonParse = (jsonString) => {
     try {
       if (!jsonString || jsonString === "undefined") return null;
@@ -72,14 +73,14 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
               requestId: reg.requestId,
               issuerCode:
                 finalResponse?.instInfo?.issuerCode ||
-           initialRequest?.instInfo?.issuerCode ||
+                initialRequest?.instInfo?.issuerCode ||
                 "Not available",
               issuerName:
                 finalResponse?.instInfo?.issuerName ||
-                 initialRequest?.instInfo?.issuerName ||
+                initialRequest?.instInfo?.issuerName ||
                 "Not available",
               emailId:
-               finalResponse?.activationDetail?.emailId ||
+                finalResponse?.activationDetail?.emailId ||
                 initialRequest?.issuedCardInfo?.emailId ||
                 "Not available",
               statusMessage: finalResponse?.statusMessage || "Not available",
@@ -135,15 +136,22 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userEmail');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userEmail");
     setIsAuthenticated(false);
-    navigate('/');
+    navigate("/");
+  };
+
+  const handleHomeView = () => {
+    navigate("/home");
   };
 
   return (
     <div className="dark-theme">
       <div className="header-dark">
+        <button onClick={handleHomeView} className="home-button">
+          <img src={HomeImage} alt="Home Visual" className="home-img" />
+        </button>
         <h2 className="header-title">Registration Report</h2>
         <button onClick={handleLogout} className="logout-button">
           Logout
