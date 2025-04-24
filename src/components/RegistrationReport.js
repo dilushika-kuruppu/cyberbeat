@@ -5,9 +5,27 @@ import HomeImage from "../assets/Logo.svg";
 
 const RegistrationReport = ({ setIsAuthenticated }) => {
   const [registrations, setRegistrations] = useState([]);
+  const [filteredRegistrations, setFilteredRegistrations] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dateFilter, setDateFilter] = useState({
+    from: "",
+    to: "",
+  });
   const navigate = useNavigate();
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredRegistrations.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   const safeJsonParse = (jsonString) => {
     try {
       if (!jsonString || jsonString === "undefined") return null;
@@ -43,6 +61,54 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
       return "Invalid date";
     }
   };
+
+  const parseDateFromTimestamp = (timestamp) => {
+    if (!timestamp) return null;
+    try {
+      const cleanedTimestamp = timestamp.replace(" IST", "");
+      return new Date(cleanedTimestamp);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const applyDateFilter = () => {
+    if (!dateFilter.from && !dateFilter.to) {
+      setFilteredRegistrations(registrations);
+      setCurrentPage(1);
+      return;
+    }
+
+    const fromDate = dateFilter.from ? new Date(dateFilter.from) : null;
+    const toDate = dateFilter.to ? new Date(dateFilter.to) : null;
+
+    const filtered = registrations.filter((item) => {
+      const itemDate = parseDateFromTimestamp(
+        item.originalTimestamp || item.timestamp
+      );
+      if (!itemDate) return false;
+
+      if (fromDate && itemDate < fromDate) return false;
+      if (toDate && itemDate > new Date(toDate.getTime() + 86400000))
+        return false;
+
+      return true;
+    });
+
+    setFilteredRegistrations(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilter = () => {
+    setDateFilter({ from: "", to: "" });
+    setFilteredRegistrations(registrations);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    setFilteredRegistrations(registrations);
+    setCurrentPage(1);
+  }, [registrations]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,6 +179,8 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
         }
 
         setRegistrations(processedRegistrations);
+        setFilteredRegistrations(processedRegistrations);
+        setCurrentPage(1);
       } catch (err) {
         setError(`Failed to load data: ${err.message}`);
       } finally {
@@ -125,6 +193,14 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
 
   const handleViewVerification = () => {
     navigate("/verification/requestId");
+  };
+
+  const handleDateFilterChange = (e) => {
+    const { name, value } = e.target;
+    setDateFilter((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   if (loading) {
@@ -157,7 +233,36 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
           Logout
         </button>
       </div>
-
+      <div className="date-filter-container">
+        <div className="date-filter-group">
+          <label htmlFor="fromDate">From:</label>
+          <input
+            type="date"
+            id="fromDate"
+            name="from"
+            value={dateFilter.from}
+            onChange={handleDateFilterChange}
+            className="date-input"
+          />
+        </div>
+        <div className="date-filter-group">
+          <label htmlFor="toDate">To:</label>
+          <input
+            type="date"
+            id="toDate"
+            name="to"
+            value={dateFilter.to}
+            onChange={handleDateFilterChange}
+            className="date-input"
+          />
+        </div>
+        <button onClick={applyDateFilter} className="filter-button">
+          Filter
+        </button>
+        <button onClick={handleClearFilter} className="clear-filter-button">
+          Clear
+        </button>
+      </div>
       <div className="table-container-dark">
         <table>
           <thead>
@@ -174,8 +279,8 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
             </tr>
           </thead>
           <tbody>
-            {registrations.length > 0 ? (
-              registrations.map((item) => (
+            {currentItems.length > 0 ? (
+              currentItems.map((item) => (
                 <tr key={item.requestId}>
                   <td>{item.timestamp}</td>
                   <td>{item.requestId}</td>
@@ -198,6 +303,72 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
           </tbody>
         </table>
       </div>
+      {filteredRegistrations.length > itemsPerPage && (
+        <div className="pagination-controls">
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-button"
+          >
+            &laquo; Previous
+          </button>
+
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+
+            return (
+              <button
+                key={pageNum}
+                onClick={() => paginate(pageNum)}
+                className={`pagination-button ${
+                  currentPage === pageNum ? "active" : ""
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+
+          {totalPages > 5 && currentPage < totalPages - 2 && (
+            <span className="pagination-ellipsis">...</span>
+          )}
+
+          {totalPages > 5 && currentPage < totalPages - 2 && (
+            <button
+              onClick={() => paginate(totalPages)}
+              className={`pagination-button ${
+                currentPage === totalPages ? "active" : ""
+              }`}
+            >
+              {totalPages}
+            </button>
+          )}
+
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className="pagination-button"
+          >
+            Next &raquo;
+          </button>
+        </div>
+      )}
+
+      <div className="pagination-info">
+        Showing {filteredRegistrations.length > 0 ? indexOfFirstItem + 1 : 0}-
+        {Math.min(indexOfLastItem, filteredRegistrations.length)} of{" "}
+        {filteredRegistrations.length} items
+      </div>
+
       <button onClick={handleViewVerification} className="back-button">
         View Verification Report →
       </button>

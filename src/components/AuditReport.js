@@ -3,17 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { apiService } from "../components/Api";
 import HomeImage from "../assets/Logo.svg";
 
-const VerificationView = ({ setIsAuthenticated }) => {
-  const [verifications, setVerifications] = useState([]);
-  const [filteredVerifications, setFilteredVerifications] = useState([]);
+const AuditReportView = ({ setIsAuthenticated }) => {
+  const [audits, setAudits] = useState([]);
+  const [filteredAudits, setFilteredAudits] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [dateFilter, setDateFilter] = useState({
     from: "",
     to: "",
   });
   const navigate = useNavigate();
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredAudits.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAudits.length / itemsPerPage);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const safeJsonParse = (jsonString) => {
     try {
@@ -63,14 +70,15 @@ const VerificationView = ({ setIsAuthenticated }) => {
 
   const applyDateFilter = () => {
     if (!dateFilter.from && !dateFilter.to) {
-      setFilteredVerifications(verifications);
+      setFilteredAudits(audits);
+      setCurrentPage(1);
       return;
     }
 
     const fromDate = dateFilter.from ? new Date(dateFilter.from) : null;
     const toDate = dateFilter.to ? new Date(dateFilter.to) : null;
 
-    const filtered = verifications.filter((item) => {
+    const filtered = audits.filter((item) => {
       const itemDate = parseDateFromTimestamp(
         item.originalTimestamp || item.timestamp
       );
@@ -83,97 +91,46 @@ const VerificationView = ({ setIsAuthenticated }) => {
       return true;
     });
 
-    setFilteredVerifications(filtered);
+    setFilteredAudits(filtered);
   };
 
   const handleClearFilter = () => {
     setDateFilter({ from: "", to: "" });
-    setFilteredVerifications(verifications);
+    setFilteredAudits(audits);
+    setCurrentPage(1);
   };
 
   useEffect(() => {
-    setFilteredVerifications(verifications);
-  }, [verifications]);
+    setFilteredAudits(audits);
+    setCurrentPage(1);
+  }, [audits]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const startTime = "Tue Oct 01 00:00:00 IST 2024";
-        const endTime = "Tue Oct 08 23:59:59 IST 2024";
 
-        const data = await apiService.getTimestampReport(startTime, endTime);
+        const data = await apiService.getAuditReport();
         if (!data) {
           throw new Error("No data received from API");
         }
-        const registrationList = data.registerResponseDtoList || [];
-        if (!registrationList.length) {
-          throw new Error("No registration data found in response");
+        const activityLogs = data.activityLogList || [];
+        if (!activityLogs.length) {
+          throw new Error("No activity logs found in response");
         }
 
-        const processedRegistrations = registrationList
-          .map((reg) => {
-            const finalResponse = safeJsonParse(
-              reg.finalResponse
-            )?.vkenpayRegistration;
-            const initialRequest = safeJsonParse(reg.initialRequest);
-
-            if (!reg.requestId) {
-              return null;
-            }
-
-            return {
-              timestamp: formatTimestamp(reg.timestamp),
-              requestId: reg.requestId,
-              issuerCode:
-                finalResponse?.instInfo?.issuerCode ||
-                initialRequest?.instInfo?.issuerCode ||
-                "Not available",
-              issuerName:
-                finalResponse?.instInfo?.issuerName ||
-                initialRequest?.instInfo?.issuerName ||
-                "Not available",
-              emailId:
-                finalResponse?.activationDetail?.emailId ||
-                initialRequest?.issuedCardInfo?.emailId ||
-                "Not available",
-              statusMessage: finalResponse?.statusMessage || "Not available",
-              statusCode: finalResponse?.statusCode || "Not available",
-              activationCode:
-                finalResponse?.activationDetail?.activationCode ||
-                "Not available",
-              passcode1:
-                finalResponse?.activationDetail?.pcode1 || "Not available",
-              passcode2:
-                finalResponse?.activationDetail?.pcode2 || "Not available",
-              userProfileID: finalResponse?.userProfileID || "Not available",
-              deviceRefID: finalResponse?.deviceRefID || "Not available",
-              issuedCardInfo: initialRequest?.issuedCardInfo || {
-                cardPan:
-                  initialRequest?.issuedCardInfo.cardPan || "Not available",
-                cardCvv:
-                  initialRequest?.issuedCardInfo.cardCvv || "Not available",
-                expDate:
-                  initialRequest?.issuedCardInfo.expDate || "Not available",
-                firstName:
-                  initialRequest?.issuedCardInfo.firstName || "Not available",
-                lastName:
-                  initialRequest?.issuedCardInfo.lastName || "Not available",
-                city: initialRequest?.issuedCardInfo.city || "Not available",
-                phoneNo:
-                  initialRequest?.issuedCardInfo.phoneNo || "Not available",
-              },
-            };
-          })
-          .filter((reg) => reg !== null);
-
-        if (!processedRegistrations.length) {
-          throw new Error("No valid registration data found");
-        }
-
-        setVerifications(processedRegistrations);
-        setFilteredVerifications(processedRegistrations);
+        const processedActivities = activityLogs.map((log) => {
+          return {
+            timestamp: formatTimestamp(log.timestamp),
+            action: log.action || "Not available",
+            user: log.user || "undefined",
+          };
+        });
+        console.log(processedActivities);
+        setAudits(processedActivities);
+        setFilteredAudits(processedActivities);
+        setCurrentPage(1);
       } catch (err) {
         setError(`Failed to load data: ${err.message}`);
       } finally {
@@ -192,10 +149,6 @@ const VerificationView = ({ setIsAuthenticated }) => {
     navigate("/home");
   };
 
-  const handleViewAudit = () => {
-    navigate("/audit-report");
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
@@ -212,7 +165,7 @@ const VerificationView = ({ setIsAuthenticated }) => {
   };
 
   if (loading) {
-    return <div className="loading-dark">Loading verification report...</div>;
+    return <div className="loading-dark">Loading audit report...</div>;
   }
   if (error) {
     return <div className="error-message">{error}</div>;
@@ -224,7 +177,7 @@ const VerificationView = ({ setIsAuthenticated }) => {
         <button onClick={handleHomeView} className="home-button">
           <img src={HomeImage} alt="Home Visual" className="home-img" />
         </button>
-        <h2 className="header-title">Verification Report</h2>
+        <h2 className="header-title">Audit Report</h2>
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>
@@ -263,43 +216,100 @@ const VerificationView = ({ setIsAuthenticated }) => {
         <thead>
           <tr>
             <th>Timestamp</th>
-            <th>Request ID</th>
-            <th>Number to Verify</th>
-            <th>Issuer Code</th>
-            <th>Status Message</th>
-            <th>Status Code</th>
+            <th>Action</th>
+            <th>User</th>
           </tr>
         </thead>
         <tbody>
-          {filteredVerifications.length > 0 ? (
-            filteredVerifications.map((item) => (
+          {currentItems.length > 0 ? (
+            currentItems.map((item) => (
               <tr key={item.requestId}>
                 <td>{item.timestamp}</td>
-                <td>{item.requestId}</td>
-                <td>{item.issuedCardInfo.cardPan}</td>
-                <td>{item.issuerCode}</td>
-                <td>{item.statusMessage}</td>
-                <td>{item.statusCode}</td>
+                <td>{item.action}</td>
+                <td>{item.user}</td>
               </tr>
             ))
           ) : (
             <tr>
               <td colSpan="9" className="no-data">
-                No registration data available
+                No Audit data available
               </td>
             </tr>
           )}
         </tbody>
       </table>
 
+      {filteredAudits.length > itemsPerPage && (
+        <div className="pagination-controls">
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-button"
+          >
+            &laquo; Previous
+          </button>
+
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+
+            return (
+              <button
+                key={pageNum}
+                onClick={() => paginate(pageNum)}
+                className={`pagination-button ${
+                  currentPage === pageNum ? "active" : ""
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+
+          {totalPages > 5 && currentPage < totalPages - 2 && (
+            <span className="pagination-ellipsis">...</span>
+          )}
+
+          {totalPages > 5 && currentPage < totalPages - 2 && (
+            <button
+              onClick={() => paginate(totalPages)}
+              className={`pagination-button ${
+                currentPage === totalPages ? "active" : ""
+              }`}
+            >
+              {totalPages}
+            </button>
+          )}
+
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className="pagination-button"
+          >
+            Next &raquo;
+          </button>
+        </div>
+      )}
+
+      <div className="pagination-info">
+        Showing {filteredAudits.length > 0 ? indexOfFirstItem + 1 : 0}-
+        {Math.min(indexOfLastItem, filteredAudits.length)} of{" "}
+        {filteredAudits.length} items
+      </div>
+
       <button onClick={handleBackToRegistration} className="back-button">
         ← Back to Registration
-      </button>
-      <button onClick={handleViewAudit} className="back-button">
-        View Audit Report →
       </button>
     </div>
   );
 };
 
-export default VerificationView;
+export default AuditReportView;

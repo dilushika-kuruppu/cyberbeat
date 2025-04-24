@@ -43,7 +43,15 @@ export const apiService = {
       const data = await response.json();
       logVerification("verify_attempt", "success", "Verification successful", {
         email,
+        issuers: data.issuers,
+        permissions: data.permissionObj?.permissionList,
       });
+      if (data.permissionObj?.permissionList) {
+        localStorage.setItem(
+          "userPermissions",
+          JSON.stringify(data.permissionObj.permissionList)
+        );
+      }
       return data;
     } catch (error) {
       logVerification("verify_attempt", "error", {
@@ -91,20 +99,51 @@ export const apiService = {
   },
 
   // Get issuer report
-  getIssuerReport: async (issuerId) => {
+  getIssuerReport: async (issuerCodes, userId) => {
     try {
+      const permissions = JSON.parse(
+        localStorage.getItem("userPermissions") || "[]"
+      );
+      if (
+        !permissions.includes("admin") &&
+        !permissions.includes("superAdmin")
+      ) {
+        throw new Error(
+          "Unauthorized: You don't have permission to access this report"
+        );
+      }
+
+      logVerification(
+        "fetch_report",
+        "started",
+        "Fetching registration report",
+        {
+          issuerCodes,
+          userId,
+        }
+      );
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE}/issuer/${issuerId}`, {
+      const response = await fetch(`${API_BASE}/registrationList`, {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
+        body: JSON.stringify({
+          issurCode: Array.isArray(issuerCodes)
+            ? issuerCodes
+            : [String(issuerCodes)],
+          userId: userId,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch issuer report");
       return await response.json();
     } catch (error) {
       logVerification("fetch_issuer", "error", {
-        issuerId,
+        issuerCodes,
+        userId,
         error: error.message,
       });
       throw error;
@@ -114,6 +153,27 @@ export const apiService = {
   // Get timestamp report
   getTimestampReport: async (startTime, endTime) => {
     try {
+      const permissions = JSON.parse(
+        localStorage.getItem("userPermissions") || "[]"
+      );
+      if (
+        !permissions.includes("admin") &&
+        !permissions.includes("superAdmin")
+      ) {
+        throw new Error(
+          "Unauthorized: You don't have permission to access this report"
+        );
+      }
+
+      logVerification(
+        "fetch_report",
+        "started",
+        "Fetching registration report",
+        {
+          startTime,
+          endTime,
+        }
+      );
       const token = localStorage.getItem("authToken");
       const params = new URLSearchParams({ startTime, endTime });
       const response = await fetch(`${API_BASE}/timestamp?${params}`, {
@@ -128,6 +188,47 @@ export const apiService = {
       logVerification("fetch_timestamp", "error", {
         startTime,
         endTime,
+        error: error.message,
+      });
+      throw error;
+    }
+  },
+
+  // Get audit report
+  getAuditReport: async (email) => {
+    try {
+      const permissions = JSON.parse(
+        localStorage.getItem("userPermissions") || "[]"
+      );
+      if (
+        !permissions.includes("user") &&
+        !permissions.includes("superAdmin")
+      ) {
+        throw new Error(
+          "Unauthorized: You don't have permission to access this report"
+        );
+      }
+
+      logVerification(
+        "fetch_report",
+        "started",
+        "Fetching registration report",
+        {
+          email,
+        }
+      );
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE}/activityList`, {
+        headers: {
+          User: email,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch audit report");
+      return await response.json();
+    } catch (error) {
+      logVerification("fetch_issuer", "error", {
         error: error.message,
       });
       throw error;

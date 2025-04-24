@@ -12,6 +12,9 @@ const Home = ({ setIsAuthenticated }) => {
     navigate("/verification/requestId");
   };
 
+ const  handleViewAudit = () => {
+navigate("/audit-report")
+ };
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
@@ -45,6 +48,15 @@ const Home = ({ setIsAuthenticated }) => {
           <button className="card-button">View Report</button>
         </div>
       </div>
+      <div className="cards-container">
+        <div className="dashboard-card" onClick={handleViewAudit}>
+          <div className="card-icon">
+            <i className="fas fa-check"></i>
+          </div>
+          <h2>Audit Report</h2>
+          <button className="card-button">View Audit Report</button>
+        </div>
+        </div>
     </div>
   );
 };

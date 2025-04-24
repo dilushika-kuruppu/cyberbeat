@@ -22,8 +22,8 @@ const Login = ({ setIsAuthenticated }) => {
         credentials.email,
         credentials.verifyCode
       );
-      // credentials expired use status fail to test purpose
-      if (verifyResponse.status === 'fail' || verifyResponse.success === true) {
+      // credentials expired use status success to test purpose
+      if (verifyResponse.status === 'success' || verifyResponse.success === true) {
       localStorage.setItem("authToken", verifyResponse.token);
       localStorage.setItem("userEmail", credentials.email);
       await apiService.verifySuccess(credentials.email, credentials.verifyCode);

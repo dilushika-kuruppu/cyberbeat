@@ -8,6 +8,7 @@ import {
 import Login from "./components/Login";
 import RegistrationReport from "./components/RegistrationReport";
 import Verification from "./components/VerificationReport";
+import Audit from "./components/AuditReport";
 import Home from "./components/Home";
 import "./App.css";
 
@@ -43,6 +44,11 @@ function App() {
           path="/verification/:requestId"
           element={isAuthenticated ? 
           <Verification setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />}
+        />
+          <Route
+          path="/audit-report"
+          element={isAuthenticated ? 
+          <Audit setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />}
         />
       </Routes>
     </Router>
