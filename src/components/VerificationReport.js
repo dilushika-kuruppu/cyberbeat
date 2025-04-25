@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import MaskedPan from './MaskedPan';
 import { apiService } from "../components/Api";
 import HomeImage from "../assets/Logo.svg";
 
@@ -111,7 +112,6 @@ const VerificationView = ({ setIsAuthenticated }) => {
         if (!registrationList.length) {
           throw new Error("No registration data found in response");
         }
-
         const processedRegistrations = registrationList
           .map((reg) => {
             const finalResponse = safeJsonParse(
@@ -217,7 +217,7 @@ const VerificationView = ({ setIsAuthenticated }) => {
   if (error) {
     return <div className="error-message">{error}</div>;
   }
-
+ 
   return (
     <div className="dark-theme">
       <div className="header-dark">
@@ -276,7 +276,7 @@ const VerificationView = ({ setIsAuthenticated }) => {
               <tr key={item.requestId}>
                 <td>{item.timestamp}</td>
                 <td>{item.requestId}</td>
-                <td>{item.issuedCardInfo.cardPan}</td>
+                <td><MaskedPan pan={item.issuedCardInfo.cardPan}visibleDigits={5} /></td>
                 <td>{item.issuerCode}</td>
                 <td>{item.statusMessage}</td>
                 <td>{item.statusCode}</td>
