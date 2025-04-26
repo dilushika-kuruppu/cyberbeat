@@ -105,6 +105,7 @@ export const apiService = {
         localStorage.getItem("userPermissions") || "[]"
       );
       if (
+        !permissions.includes("user")&&
         !permissions.includes("admin") &&
         !permissions.includes("superAdmin")
       ) {
@@ -201,7 +202,6 @@ export const apiService = {
         localStorage.getItem("userPermissions") || "[]"
       );
       if (
-        !permissions.includes("user") &&
         !permissions.includes("superAdmin")
       ) {
         throw new Error(
