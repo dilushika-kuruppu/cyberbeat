@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Home = ({ setIsAuthenticated }) => {
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate();
 
   const handleViewRegistration = () => {
@@ -15,9 +16,16 @@ const Home = ({ setIsAuthenticated }) => {
  const  handleViewAudit = () => {
 navigate("/audit-report")
  };
+ useEffect(() => {
+  const name = localStorage.getItem('userName');
+  if (name) {
+    setUserName(name);
+  }
+}, []);
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     setIsAuthenticated(false);
     navigate("/");
   };
@@ -26,6 +34,7 @@ navigate("/audit-report")
     <div className="dark-theme home-page">
       <div className="header-dark">
         <h1 className="header-title">Dashboard</h1>
+        {userName && <span className="username">{userName}</span>}
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>

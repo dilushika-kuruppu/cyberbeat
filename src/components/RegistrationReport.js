@@ -8,6 +8,7 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
   const [filteredRegistrations, setFilteredRegistrations] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateFilter, setDateFilter] = useState({
@@ -110,6 +111,12 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
     setCurrentPage(1);
   }, [registrations]);
 
+  useEffect(() => {
+    const name = localStorage.getItem('userName');
+    if (name) {
+      setUserName(name);
+    }
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -214,6 +221,7 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     setIsAuthenticated(false);
     navigate("/");
   };
@@ -228,7 +236,8 @@ const RegistrationReport = ({ setIsAuthenticated }) => {
         <button onClick={handleHomeView} className="home-button">
           <img src={HomeImage} alt="Home Visual" className="home-img" />
         </button>
-        <h2 className="header-title">Registration Report</h2>
+        <h2 className="header-title">Vkenpay Registration Report</h2>
+        {userName && <span className="username">{userName}</span>}
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>

@@ -9,6 +9,7 @@ const AuditReportView = ({ setIsAuthenticated }) => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+   const [userName, setUserName] = useState('');
   const [error, setError] = useState(null);
   const [dateFilter, setDateFilter] = useState({
     from: "",
@@ -101,6 +102,13 @@ const AuditReportView = ({ setIsAuthenticated }) => {
   };
 
   useEffect(() => {
+    const name = localStorage.getItem('userName');
+    if (name) {
+      setUserName(name);
+    }
+  }, []);
+
+  useEffect(() => {
     setFilteredAudits(audits);
     setCurrentPage(1);
   }, [audits]);
@@ -127,7 +135,6 @@ const AuditReportView = ({ setIsAuthenticated }) => {
             user: log.user || "undefined",
           };
         });
-        console.log(processedActivities);
         setAudits(processedActivities);
         setFilteredAudits(processedActivities);
         setCurrentPage(1);
@@ -152,6 +159,7 @@ const AuditReportView = ({ setIsAuthenticated }) => {
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     setIsAuthenticated(false);
     navigate("/");
   };
@@ -177,7 +185,8 @@ const AuditReportView = ({ setIsAuthenticated }) => {
         <button onClick={handleHomeView} className="home-button">
           <img src={HomeImage} alt="Home Visual" className="home-img" />
         </button>
-        <h2 className="header-title">Audit Report</h2>
+        <h2 className="header-title">Vkenpay Audit Report</h2>
+        {userName && <span className="username">{userName}</span>}
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>

@@ -8,7 +8,7 @@ const VerificationView = ({ setIsAuthenticated }) => {
   const [verifications, setVerifications] = useState([]);
   const [filteredVerifications, setFilteredVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
-
+ const [userName, setUserName] = useState('');
   const [error, setError] = useState(null);
   const [dateFilter, setDateFilter] = useState({
     from: "",
@@ -95,6 +95,14 @@ const VerificationView = ({ setIsAuthenticated }) => {
   useEffect(() => {
     setFilteredVerifications(verifications);
   }, [verifications]);
+
+  useEffect(() => {
+    const name = localStorage.getItem('userName');
+    if (name) {
+      setUserName(name);
+    }
+  }, []);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -199,6 +207,7 @@ const VerificationView = ({ setIsAuthenticated }) => {
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     setIsAuthenticated(false);
     navigate("/");
   };
@@ -224,7 +233,8 @@ const VerificationView = ({ setIsAuthenticated }) => {
         <button onClick={handleHomeView} className="home-button">
           <img src={HomeImage} alt="Home Visual" className="home-img" />
         </button>
-        <h2 className="header-title">Verification Report</h2>
+        <h2 className="header-title">Vkenpay Verification Report</h2>
+        {userName && <span className="username">{userName}</span>}
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>

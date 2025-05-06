@@ -117,6 +117,7 @@
 
 .form-group {
   margin-bottom: 20px;
+  position: relative;
 }
 
 .form-group label {
@@ -162,7 +163,7 @@
   margin-top: 10px;
 }
 
-.login-button:hover {
+ .login-button:hover {
   background-color: #92278F;
 }
 
@@ -175,7 +176,12 @@
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s ease;
+
+} 
+.username{
+  display: 'flex' ;
   margin-left: auto;
+  padding-right: 10px;
 }
 .dark-theme {
   background-color: #ffffff;
@@ -347,6 +353,74 @@ tr:nth-child(even) {
   margin-bottom: 20px;
   font-size: 0.9rem;
 }
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 400px; /* Adjust as needed */
+}
+
+/* Input with button styling */
+.input-with-button {
+  position: relative;
+  width: 100%;
+}
+
+/* QR button inside input */
+.qr-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: #f7941d;
+  font-size: 18px;
+}
+
+.qr-button:hover {
+  color: #f7941d;
+}
+
+.qr-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* QR scanner container */
+.qr-scanner-container {
+  margin-top: 15px;
+  width: 100%;
+  max-width: 300px; /* Adjust size as needed */
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  background: #f8f8f8;
+}
+
+.webcam-element {
+  width: 100%;
+  display: block;
+  border-radius: 3px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.scan-instruction {
+  text-align: center;
+  margin-top: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .login-card-container {
