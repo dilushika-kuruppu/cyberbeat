@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import loginImage from "../assets/Logo.svg";
 import { apiService } from "../components/Api";
@@ -18,7 +18,7 @@ const Login = ({ setIsAuthenticated }) => {
   const [cameraError, setCameraError] = useState(null);
   const navigate = useNavigate();
   const webcamRef = useRef(null);
-  const captureIntervalRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,12 +31,9 @@ const Login = ({ setIsAuthenticated }) => {
         credentials.email,
         credentials.verifyCode
       );
-      // credentials expired use status success to test purpose
       if (verifyResponse.status === "success" || verifyResponse.success === true) {
         localStorage.setItem("authToken", verifyResponse.token);
         localStorage.setItem("userEmail", credentials.email);
-        // localStorage.setItem("userName", verifyResponse.name || "User");
-
         localStorage.setItem(
           "userName",
           name.charAt(0).toUpperCase() + name.slice(1)
@@ -60,49 +57,51 @@ const Login = ({ setIsAuthenticated }) => {
   };
 
   const captureAndScan = useCallback(() => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        const img = new Image();
-        img.src = imageSrc;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (!webcamRef.current || !showScanner) return;
 
-          if (code) {
-            setCredentials({ ...credentials, verifyCode: code.data });
-            setShowScanner(false);
-            if (captureIntervalRef.current) {
-              clearInterval(captureIntervalRef.current);
-            }
-          }
-        };
+    try {
+      const video = webcamRef.current.video;
+      const canvas = canvasRef.current;
+      
+      if (!video || video.readyState !== 4) return;
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code && code.data) {
+        setCredentials(prev => ({ ...prev, verifyCode: code.data }));
+        setShowScanner(false);
       }
+    } catch (err) {
+      console.error("QR scan error:", err);
     }
-  }, [credentials]);
+  }, [showScanner]);
 
-  const startScanner = () => {
-    setShowScanner(true);
+  useEffect(() => {
+    let interval;
+    if (showScanner) {
+      interval = setInterval(() => {
+        captureAndScan();
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [showScanner, captureAndScan]);
+  const toggleScanner = () => {
+    setShowScanner(!showScanner);
     setCameraError(null);
-    captureIntervalRef.current = setInterval(captureAndScan, 300);
-  };
-
-  const stopScanner = () => {
-    setShowScanner(false);
-    if (captureIntervalRef.current) {
-      clearInterval(captureIntervalRef.current);
-    }
   };
 
   const videoConstraints = {
     facingMode: "environment",
-    width: 1280,
-    height: 720,
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
   };
 
   return (
@@ -147,61 +146,46 @@ const Login = ({ setIsAuthenticated }) => {
                 <button
                   type="button"
                   className="qr-button"
-                  onClick={showScanner ? stopScanner : startScanner}
+                  onClick={toggleScanner}
                   disabled={loading}
                 >
                   {showScanner ? <FaTimes /> : <FaQrcode />}
                 </button>
               </div>
-
-              {showScanner && (
-                <div className="qr-scanner-container">
-                  <Webcam
-                    audio={false}
-                    ref={webcamRef}
-                    screenshotFormat="image/jpeg"
-                    videoConstraints={videoConstraints}
-                    onUserMediaError={(err) =>
-                      setCameraError(err.message || "Failed to access camera")
-                    }
-                    className="webcam-element"
-                  />
-                  {cameraError && (
-                    <p className="error-message">{cameraError}</p>
-                  )}
-                  <p className="scan-instruction">
-                    Scan your Vkencrdence QR code
-                  </p>
-                </div>
-              )}
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
               {loading ? "Verifying..." : "Verify"}
             </button>
-
-            {showScanner && (
-              <div className="qr-scanner-wrapper">
-                <div className="qr-scanner-container">
-                  <Webcam
-                    audio={false}
-                    ref={webcamRef}
-                    screenshotFormat="image/jpeg"
-                    videoConstraints={videoConstraints}
-                    onUserMediaError={(err) =>
-                      setCameraError(err.message || "Failed to access camera")
-                    }
-                  />
-                  {cameraError && (
-                    <p className="error-message">{cameraError}</p>
-                  )}
-                  <p className="scan-instruction">
-                    Scan your Vkencrdence QR code
-                  </p>
-                </div>
-              </div>
-            )}
           </form>
+
+          {showScanner && (
+            <div className="qr-scanner-container">
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                videoConstraints={videoConstraints}
+                onUserMediaError={(err) => {
+                  setCameraError(err.message || "Failed to access camera");
+                  setShowScanner(false);
+                }}
+                className="webcam-element"
+              />
+              <canvas
+                ref={canvasRef}
+                style={{ display: 'none' }}
+              />
+              {cameraError && (
+                <p className="error-message">{cameraError}</p>
+              )}
+              <p className="scan-instruction">
+                Point your camera at the QR code
+              </p>
+              <div className="scanning-overlay">
+                <div className="scanning-line" />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="login-image-card">
